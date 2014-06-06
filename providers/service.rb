@@ -28,17 +28,12 @@ def whyrun_supported?
 end
 
 action :enable do
-  config_file = ::File.join(read_conf_dir,
-                            "#{new_resource.service_name}.pill")
+  config_file = ::File.join(read_conf_dir, "#{new_resource.service_name}.pill")
   unless @current_resource.enabled
     converge_by("enable #{ @new_resource }") do
-      link "#{node['bluepill']['init_dir']}/#{new_resource.service_name}" do
-        to node['bluepill']['bin']
-        only_if { ::File.exists?(config_file) }
-      end
       case node['platform_family']
       when "rhel", "fedora", "freebsd"
-        template "#{node['bluepill']['init_dir']}/bluepill-#{new_resource.service_name}" do
+        template "#{read_conf_dir}/#{new_resource.service_name}" do
           source "bluepill_init.#{node['platform_family']}.erb"
           cookbook "bluepill"
           owner "root"
@@ -50,8 +45,9 @@ action :enable do
           )
         end
 
-        service "bluepill-#{new_resource.service_name}" do
-          action [ :enable ]
+        link "#{node['bluepill']['init_dir']}/#{new_resource.service_name}" do
+          to "#{read_conf_dir}/#{new_resource.service_name}"
+          only_if { ::File.exists?("#{read_conf_dir}/#{new_resource.service_name}") }
         end
       end
     end
