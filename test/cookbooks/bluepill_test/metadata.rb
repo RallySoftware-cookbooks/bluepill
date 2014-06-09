@@ -1,3 +1,4 @@
+name             "bluepill_test"
 maintainer       "AJ Christensen"
 maintainer_email "aj@junglist.gen.nz"
 license          "Apache 2.0"
