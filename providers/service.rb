@@ -29,26 +29,26 @@ end
 
 action :enable do
   config_file = ::File.join(read_conf_dir, "#{new_resource.service_name}.pill")
-  converge_by("enable #{ @new_resource }") do
-  case node['platform_family']
-    when "rhel", "fedora", "freebsd"
-      template "#{read_conf_dir}/#{new_resource.service_name}" do
-        source "bluepill_init.#{node['platform_family']}.erb"
-        cookbook "bluepill"
-        owner "root"
-        group node['bluepill']['group']
-        mode "0755"
-        variables(
-          :service_name => new_resource.service_name,
-          :config_file => config_file
-        )
-        notifies [:delete, :create], "link[#{node['bluepill']['init_dir']}/#{new_resource.service_name}]", :immediately
-      end
+  unless @current_resource.enabled
+    converge_by("enable #{ @new_resource }") do
+      case node['platform_family']
+      when "rhel", "fedora", "freebsd"
+        template "#{read_conf_dir}/#{new_resource.service_name}" do
+          source "bluepill_init.#{node['platform_family']}.erb"
+          cookbook "bluepill"
+          owner "root"
+          group node['bluepill']['group']
+          mode "0755"
+          variables(
+            :service_name => new_resource.service_name,
+            :config_file => config_file
+          )
+        end
 
-      link "#{node['bluepill']['init_dir']}/#{new_resource.service_name}" do
-        to "#{read_conf_dir}/#{new_resource.service_name}"
-        only_if { ::File.exists?("#{read_conf_dir}/#{new_resource.service_name}") }
-        action :nothing
+        link "#{node['bluepill']['init_dir']}/#{new_resource.service_name}" do
+          to "#{read_conf_dir}/#{new_resource.service_name}"
+          only_if { ::File.exists?("#{read_conf_dir}/#{new_resource.service_name}") }
+        end
       end
     end
   end
