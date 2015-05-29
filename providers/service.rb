@@ -118,8 +118,6 @@ def load_current_resource
   @current_resource
 end
 
-protected
-
 def read_conf_dir
   new_resource.conf_dir || node['bluepill']['conf_dir']
 end
